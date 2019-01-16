@@ -1,4 +1,32 @@
-﻿Public Class MyInputBox
+﻿''' <summary>
+''' General Class To Get Different Type(s) of Variable From InputBox
+''' </summary>
+Public Class MyInputBox
+    ''' <summary>
+    ''' Return a String From TextBox
+    ''' </summary>
+    ''' <param name="Title"></param>
+    ''' <returns></returns>
+    Public Shared Function GetString(Title As String) As String
+        Dim s = InputBox(Title)
+        Return s
+    End Function
+    ''' <summary>
+    ''' Return a Strings From TextBox, Separator String must Add
+    ''' </summary>
+    ''' <param name="Title"></param>
+    ''' <returns></returns>
+    Public Shared Iterator Function GetStrings(Title As String, Separator As String) As IEnumerable(Of String)
+        Dim s = InputBox(Title & "Separated by " & Separator)
+        For Each Item In Split(s, Separator)
+            Yield Item
+        Next
+    End Function
+    ''' <summary>
+    ''' Return Double Or Nothing From TextBox
+    ''' </summary>
+    ''' <param name="Title"></param>
+    ''' <returns></returns>
     Public Shared Function GetDouble(Title As String) As Double
         Dim s = InputBox(Title)
         Try
@@ -26,29 +54,29 @@
             Return Nothing
         End Try
     End Function
-    Public Shared Function GetString(Title As String) As String
-        Dim s = InputBox(Title)
 
-        Return s
-
-    End Function
-    Public Shared Function GetDoubles(Title As String) As List(Of Double)
-        Dim s1 = InputBox(Title & "Separated by space")
+    ''' <summary>
+    ''' Return Enumerable of Double From TextBox 
+    ''' </summary>
+    ''' <param name="Title"></param>
+    ''' <returns></returns>
+    Public Shared Iterator Function GetDoubles(Title As String) As IEnumerable(Of Double)
+        Dim s1 = InputBox(Title & " Separated by space")
         Dim decimalSeparator As String = Globalization.CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator
         s1 = s1.Replace(".", decimalSeparator).Replace(",", decimalSeparator)
         Dim out As New List(Of Double)
         For Each s In Split(s1, " ")
             Try
                 Dim d As Double = s
-                out.Add(d)
+                Yield d
             Catch ex As Exception
 
             End Try
         Next
-        Return out
     End Function
+
     ''' <summary>
-    ''' Return Integer Or Nothing 
+    ''' Return Integer Or Nothing From TextBox 
     ''' </summary>
     ''' <param name="Title"></param>
     ''' <returns></returns>
@@ -62,22 +90,20 @@
     End Function
 
     ''' <summary>
-    ''' Return Integer Or Empty List 
+    ''' Return Enumerable of Integer From TextBox 
     ''' </summary>
     ''' <param name="Title"></param>
     ''' <returns></returns>
-    Public Shared Function GetIntegers(Title As String) As List(Of Integer)
-        Dim s1() = Split(InputBox(Title), " ")
-        Dim out As New List(Of Integer)
+    Public Shared Iterator Function GetIntegers(Title As String) As IEnumerable(Of Integer)
+        Dim s1() = Split(InputBox(Title & " Separated by space"), " ")
+
         For Each s In s1
             Try
-                out.Add(s)
-
+                Dim i As Integer = s
+                Yield i
             Catch ex As Exception
 
             End Try
-
         Next
-        Return out
     End Function
 End Class

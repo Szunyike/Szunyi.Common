@@ -4,8 +4,15 @@ Imports System.Linq.Expressions
 Imports System.Collections.Generic
 Imports System.Runtime.CompilerServices
 Imports System.Reflection
+Imports System.Text
 
 Public Class Util_Helpers
+    ''' <summary>
+    ''' Return All Enum Values
+    ''' </summary>
+    ''' <typeparam name="t"></typeparam>
+    ''' <param name="currentlySelectedEnum"></param>
+    ''' <returns></returns>
     Public Shared Function Get_All_Enum_Names_Values(Of t)(ByVal currentlySelectedEnum As Object) As List(Of String)
         Dim out As New List(Of String)
         Dim enumList As Type = GetType(t)
@@ -22,7 +29,12 @@ Public Class Util_Helpers
 
 
     End Function
-
+    ''' <summary>
+    ''' Get All Enum Names
+    ''' </summary>
+    ''' <typeparam name="t"></typeparam>
+    ''' <param name="currentlySelectedEnum"></param>
+    ''' <returns></returns>
     Public Shared Function Get_All_Enum_Names(Of t)(ByVal currentlySelectedEnum As Object) As List(Of String)
         Dim out As New List(Of String)
         Dim enumList As Type = GetType(t)
@@ -35,6 +47,12 @@ Public Class Util_Helpers
 
 
     End Function
+    ''' <summary>
+    ''' Get Enum Name From Enum Value
+    ''' </summary>
+    ''' <typeparam name="T"></typeparam>
+    ''' <param name="first"></param>
+    ''' <returns></returns>
     Public Shared Function Get_Enum_Name(Of T)(first As String) As String
         Dim enumList As Type = GetType(T)
         Dim x = CType([Enum].Parse(GetType(T), first), T)
@@ -48,6 +66,12 @@ Public Class Util_Helpers
         Next
         Return -1
     End Function
+    ''' <summary>
+    ''' Get Enum Value From Enum Name
+    ''' </summary>
+    ''' <typeparam name="T"></typeparam>
+    ''' <param name="first"></param>
+    ''' <returns></returns>
     Public Shared Function Get_Enum_Value(Of T)(first As String) As Integer
         Dim enumList As Type = GetType(T)
         Dim x = CType([Enum].Parse(GetType(T), first), T)
@@ -61,7 +85,13 @@ Public Class Util_Helpers
         Next
         Return -1
     End Function
-    Public Shared Function Get_Enum_Value(Of T)(Items As List(Of String)) As List(Of Integer)
+    ''' <summary>
+    ''' 'Get All Enum Valus From Enum Names
+    ''' </summary>
+    ''' <typeparam name="T"></typeparam>
+    ''' <param name="Items"></param>
+    ''' <returns></returns>
+    Public Shared Function Get_Enum_Values(Of T)(Items As List(Of String)) As List(Of Integer)
         Dim enumList As Type = GetType(T)
         Dim x = CType([Enum].Parse(GetType(T), Items.First), T)
         Dim values() As Integer = CType([Enum].GetValues(GetType(T)), Integer())
@@ -89,14 +119,13 @@ Public Class Util_Helpers
 
         Return out
     End Function
-    Public Shared Function Get_Enum_Valueit(Of T)(value As Object) As Integer
-        Throw New NotImplementedException()
-    End Function
 
-    Public Shared Function Get_Enum_Value() As Integer
-        Throw New NotImplementedException()
-    End Function
-
+    ''' <summary>
+    ''' Get Property Valur From Object by Property Name
+    ''' </summary>
+    ''' <param name="src"></param>
+    ''' <param name="Property_Name"></param>
+    ''' <returns></returns>
     Public Shared Function Get_Property_Value(src As Object, Property_Name As String)
 
         If IsNothing(src.GetType().GetProperty(Property_Name)) = True Then Return String.Empty
@@ -104,103 +133,49 @@ Public Class Util_Helpers
         Return src.GetType().GetProperty(Property_Name).GetValue(src)
     End Function
 
-End Class
+    Public Shared Function Get_Const_Values(Type As Type) As List(Of FieldInfo)
 
-Public Class SelectLambdaBuilder(Of T)
-    Private Shared _typePropertyInfoMappings As Dictionary(Of Type, PropertyInfo()) = New Dictionary(Of Type, PropertyInfo())()
-    Private ReadOnly _typeOfBaseClass As Type = GetType(T)
-
-    Private Function GetFieldMapping(ByVal fields As String) As Dictionary(Of String, List(Of String))
-        If String.IsNullOrEmpty(fields) Then
-            Return Nothing
-        End If
-
-        Dim selectedFieldsMap = New Dictionary(Of String, List(Of String))()
-
-        For Each s In fields.Split(","c)
-            Dim nestedFields = s.Split("."c).[Select](Function(f) f.Trim()).ToArray()
-            Dim nestedValue = If(nestedFields.Length > 1, nestedFields(1), Nothing)
-
-            If selectedFieldsMap.Keys.Any(Function(key) key = nestedFields(0)) Then
-                selectedFieldsMap(nestedFields(0)).Add(nestedValue)
-            Else
-                selectedFieldsMap.Add(nestedFields(0), New List(Of String) From {
-                    nestedValue
-                })
-            End If
-        Next
-
-        Return selectedFieldsMap
+        Dim fieldInfos As FieldInfo() = Type.GetFields(BindingFlags.[Public] Or BindingFlags.[Static] Or BindingFlags.FlattenHierarchy)
+        Return fieldInfos.Where(Function(fi) fi.IsLiteral AndAlso Not fi.IsInitOnly).ToList()
     End Function
 
-    Public Function CreateNewStatement(ByVal fields As String) As Func(Of T, T)
-        Dim selectFields = GetFieldMapping(fields)
-
-        If selectFields Is Nothing Then
-            Return Function(s) s
+    Public Shared Function HasContain(ls As IEnumerable(Of String), Item As String) As Boolean
+        Dim res = From x In ls Where x.IndexOf(Item, comparisonType:=StringComparison.InvariantCultureIgnoreCase) > -1
+        If res.Count > 0 Then
+            Return True
+        Else
+            Return False
         End If
+    End Function
 
-        Dim xParameter As ParameterExpression = Expression.Parameter(_typeOfBaseClass, "s")
-        Dim xNew As NewExpression = Expression.[New](_typeOfBaseClass)
-        Dim shpNestedPropertyBindings = New List(Of MemberAssignment)()
 
-        For Each keyValuePair In selectFields
-            Dim propertyInfos As PropertyInfo()
+    Public Shared Function GetConstants(ByVal type As Type) As IEnumerable(Of FieldInfo)
+        Dim fieldInfos = type.GetFields(BindingFlags.[Public] Or BindingFlags.[Static] Or BindingFlags.FlattenHierarchy)
+        Return fieldInfos.Where(Function(fi) fi.IsLiteral AndAlso Not fi.IsInitOnly)
+    End Function
 
-            If Not _typePropertyInfoMappings.TryGetValue(_typeOfBaseClass, propertyInfos) Then
-                Dim properties = _typeOfBaseClass.GetProperties()
-                propertyInfos = properties
-                _typePropertyInfoMappings.Add(_typeOfBaseClass, properties)
-            End If
 
-            Dim propertyType = propertyInfos.FirstOrDefault(Function(p) p.Name.ToLowerInvariant().Equals(keyValuePair.Key.ToLowerInvariant())).PropertyType
+    Public Shared Iterator Function GetConstantsValues(Of T As Class)(ByVal type As Type) As IEnumerable(Of String)
+        Dim fieldInfos = GetConstants(type)
+        For Each f In fieldInfos
+            Yield f.GetRawConstantValue
 
-            If propertyType.IsClass Then
-                Dim objClassPropInfo As PropertyInfo = _typeOfBaseClass.GetProperty(keyValuePair.Key)
-                Dim objNestedMemberExpression As MemberExpression = Expression.[Property](xParameter, objClassPropInfo)
-                Dim innerObjNew As NewExpression = Expression.[New](propertyType)
-                Dim nestedBindings = keyValuePair.Value.[Select](Function(v)
-                                                                     Dim nestedObjPropInfo As PropertyInfo = propertyType.GetProperty(v)
-                                                                     Dim nestedOrigin2 As MemberExpression = Expression.[Property](objNestedMemberExpression, nestedObjPropInfo)
-                                                                     Dim binding2 = Expression.Bind(nestedObjPropInfo, nestedOrigin2)
-                                                                     Return binding2
-                                                                 End Function)
-                Dim nestedInit As MemberInitExpression = Expression.MemberInit(innerObjNew, nestedBindings)
-                shpNestedPropertyBindings.Add(Expression.Bind(objClassPropInfo, nestedInit))
-            Else
-                Dim mbr As Expression = xParameter
-                mbr = Expression.PropertyOrField(mbr, keyValuePair.Key)
-                Dim mi As PropertyInfo = _typeOfBaseClass.GetProperty((CType(mbr, MemberExpression)).Member.Name)
-                Dim xOriginal = Expression.[Property](xParameter, mi)
-                shpNestedPropertyBindings.Add(Expression.Bind(mi, xOriginal))
-            End If
         Next
 
-        Dim xInit = Expression.MemberInit(xNew, shpNestedPropertyBindings)
-        Dim lambda = Expression.Lambda(Of Func(Of T, T))(xInit, xParameter)
-        Return lambda.Compile()
     End Function
+    Public Shared Function CreatePassword(ByVal length As Integer) As String
+        Const valid As String = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890~!@#$%^&*_-+=`|\(){}[]:;'<>,.?/"
+        Dim res As StringBuilder = New StringBuilder()
+        Dim rnd As Random = New Random()
+
+        While 0 < Math.Max(System.Threading.Interlocked.Decrement(length), length + 1)
+            res.Append(valid(rnd.[Next](valid.Length)))
+        End While
+
+        Return res.ToString()
+    End Function
+
 End Class
 
 
-Public Module PredicateBuilder
-    Function [True](Of T)() As Expression(Of Func(Of T, Boolean))
-        Return Function(f) True
-    End Function
 
-    Function [False](Of T)() As Expression(Of Func(Of T, Boolean))
-        Return Function(f) False
-    End Function
-
-    <Extension()>
-    Function [Or](Of T)(ByVal expr1 As Expression(Of Func(Of T, Boolean)), ByVal expr2 As Expression(Of Func(Of T, Boolean))) As Expression(Of Func(Of T, Boolean))
-        Dim invokedExpr = Expression.Invoke(expr2, expr1.Parameters.Cast(Of Expression)())
-        Return Expression.Lambda(Of Func(Of T, Boolean))(Expression.[OrElse](expr1.Body, invokedExpr), expr1.Parameters)
-    End Function
-
-    <Extension()>
-    Function [And](Of T)(ByVal expr1 As Expression(Of Func(Of T, Boolean)), ByVal expr2 As Expression(Of Func(Of T, Boolean))) As Expression(Of Func(Of T, Boolean))
-        Dim invokedExpr = Expression.Invoke(expr2, expr1.Parameters.Cast(Of Expression)())
-        Return Expression.Lambda(Of Func(Of T, Boolean))(Expression.[AndAlso](expr1.Body, invokedExpr), expr1.Parameters)
-    End Function
-End Module

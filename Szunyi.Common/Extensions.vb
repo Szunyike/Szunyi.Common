@@ -1,10 +1,45 @@
-﻿Imports System.Runtime.CompilerServices
+﻿Imports System.Reflection
+Imports System.Runtime.CompilerServices
 Imports System.Text
 Imports System.Text.RegularExpressions
 
 Public Module Extensions
+#Region "GO"
+    ''' <summary>
+    ''' Return the GO number in correct format or EmptyString
+    ''' </summary>
+    ''' <param name="s"></param>
+    ''' <returns></returns>
+    <Extension()>
+    Public Function Convert_to_GO(s As String) As String
+        Try
+            Dim i As Integer = s
+            Return "GO:" & i.ToString("0000000")
+        Catch ex As Exception
+            Return String.Empty
+        End Try
+    End Function
+    ''' <summary>
+    ''' Return the GO number in correct format or EmptyString
+    ''' </summary>
+    ''' <param name="i"></param>
+    ''' <returns></returns>
+    <Extension()>
+    Public Function Convert_to_GO(i As Integer) As String
+        Try
+            Return "GO:" & i.ToString("0000000")
+        Catch ex As Exception
+            Return String.Empty
+        End Try
+    End Function
+#End Region
 #Region "GetText"
-
+    ''' <summary>
+    ''' Merge Enumerable Of String in to String Using User Selected Separator
+    ''' </summary>
+    ''' <param name="Ls"></param>
+    ''' <param name="separator"></param>
+    ''' <returns></returns>
     <Extension()>
     Public Function GetText(Ls As IEnumerable(Of String), Optional separator As String = vbTab) As String
         Dim str As New StringBuilder
@@ -14,6 +49,12 @@ Public Module Extensions
         If str.Length > 0 Then str.Length -= separator.Length
         Return str.ToString
     End Function
+    ''' <summary>
+    ''' Merge Enumerable Of Long in to String Using User Selected Separator
+    ''' </summary>
+    ''' <param name="Ls"></param>
+    ''' <param name="separator"></param>
+    ''' <returns></returns>
     <Extension()>
     Public Function GetText(Ls As IEnumerable(Of Long), Optional separator As String = vbTab) As String
         Dim str As New StringBuilder
@@ -23,6 +64,12 @@ Public Module Extensions
         If str.Length > 0 Then str.Length -= separator.Length
         Return str.ToString
     End Function
+    ''' <summary>
+    ''' Merge Enumerable Of Double in to String Using User Selected Separator
+    ''' </summary>
+    ''' <param name="Ls"></param>
+    ''' <param name="separator"></param>
+    ''' <returns></returns>
     <Extension()>
     Public Function GetText(Ls As IEnumerable(Of Double), Optional separator As String = vbTab) As String
         Dim str As New StringBuilder
@@ -32,6 +79,12 @@ Public Module Extensions
         If str.Length > 0 Then str.Length -= separator.Length
         Return str.ToString
     End Function
+    ''' <summary>
+    ''' Merge Enumerable Of Integer in to String Using User Selected Separator
+    ''' </summary>
+    ''' <param name="Ls"></param>
+    ''' <param name="separator"></param>
+    ''' <returns></returns>
     <Extension()>
     Public Function GetText(Ls As IEnumerable(Of Integer), Optional separator As String = vbTab) As String
         Dim str As New StringBuilder
@@ -41,19 +94,37 @@ Public Module Extensions
         If str.Length > 0 Then str.Length -= separator.Length
         Return str.ToString
     End Function
-    Public Function GetText(Bytes As List(Of Byte)) As String
+    ''' <summary>
+    ''' Merge Enumerable Of Byte in to String
+    ''' </summary>
+    ''' <param name="Bytes"></param>
+    ''' <returns></returns>
+    <Extension()>
+    Public Function GetText(Bytes As IEnumerable(Of Byte)) As String
         Return System.Text.Encoding.ASCII.GetString(Bytes.ToArray())
     End Function
+    ''' <summary>
+    ''' Merge Dictionary Keys And Values Using User Defined Separator and vbcrlf
+    ''' </summary>
+    ''' <param name="Dict"></param>
+    ''' <param name="separator"></param>
+    ''' <returns></returns>
     <Extension()>
-    Public Function GetText(x1 As Dictionary(Of String, Integer), Optional separator As String = vbTab) As String
-        If IsNothing(x1) = True OrElse x1.Count = 0 Then Return String.Empty
+    Public Function GetText(Dict As Dictionary(Of String, Integer), Optional separator As String = vbTab) As String
+        If IsNothing(Dict) = True OrElse Dict.Count = 0 Then Return String.Empty
         Dim str As New System.Text.StringBuilder
-        For Each item In x1
+        For Each item In Dict
             str.Append(item.Key).Append(separator).Append(item.Value).AppendLine()
         Next
-        If str.Length > 0 Then str.Length -= 2
+        If str.Length > 0 Then str.Length -= separator.Length
         Return str.ToString
     End Function
+    ''' <summary>
+    ''' Merge Dictionary Keys And Values Using User Defined Separator and vbcrlf
+    ''' </summary>
+    ''' <param name="x1"></param>
+    ''' <param name="separator"></param>
+    ''' <returns></returns>
     <Extension()>
     Public Function GetText(x1 As Dictionary(Of Integer, Integer), Optional separator As String = vbTab) As String
         If IsNothing(x1) = True OrElse x1.Count = 0 Then Return String.Empty
@@ -64,6 +135,12 @@ Public Module Extensions
         If str.Length > 0 Then str.Length -= 2
         Return str.ToString
     End Function
+    ''' <summary>
+    ''' Merge Dictionary Keys And Values Using User Defined Separator and vbcrlf
+    ''' </summary>
+    ''' <param name="x1"></param>
+    ''' <param name="separator"></param>
+    ''' <returns></returns>
     <Extension()>
     Public Function GetText(x1 As Dictionary(Of String, List(Of String)), Optional separator As String = vbTab) As String
         If IsNothing(x1) = True OrElse x1.Count = 0 Then Return String.Empty
@@ -90,6 +167,23 @@ Public Module Extensions
 #End Region
 
 #Region "Column"
+    ''' <summary>
+    ''' Create Dictionary From Lines and two Indexes
+    ''' </summary>
+    ''' <param name="Lines"></param>
+    ''' <param name="Index1"></param>
+    ''' <param name="index2"></param>
+    ''' <param name="Separator"></param>
+    ''' <returns></returns>
+    <Extension()>
+    Public Function ToDictionary(Lines As IEnumerable(Of String), Index1 As Integer, index2 As Integer, Optional Separator As String = vbTab)
+        Dim d As New Dictionary(Of String, String)
+        For Each Line In Lines
+            Dim s = Split(Line, Separator)
+            d.Add(s(Index1), s(index2))
+        Next
+        Return d
+    End Function
     ''' <summary>
     ''' Return the index of column, or -1
     ''' </summary>
@@ -159,6 +253,11 @@ Public Module Extensions
 #End Region
 
 #Region "ConvertToNumbers"
+    ''' <summary>
+    ''' Convert Enumerable of Strings into Enumerable Of Integer
+    ''' </summary>
+    ''' <param name="ls"></param>
+    ''' <returns></returns>
     <Extension()>
     Public Iterator Function ToInteger(ls As IEnumerable(Of String)) As IEnumerable(Of Integer)
         For Each s In ls
@@ -171,18 +270,39 @@ Public Module Extensions
         Next
 
     End Function
+    ''' <summary>
+    ''' Convert a String Into Double
+    ''' </summary>
+    ''' <param name="ls"></param>
+    ''' <returns></returns>
+    <Extension()>
+    Public Function ToDouble(ls As String) As Double
+        Try
+            Dim i = CDbl(ls)
+            Return i
+        Catch ex As Exception
+            Return Double.NaN
+        End Try
+
+
+    End Function
+    ''' <summary>
+    ''' Convert Enumerable of Strings into Enumerable Of Double
+    ''' </summary>
+    ''' <param name="ls"></param>
+    ''' <returns></returns>
     <Extension()>
     Public Iterator Function ToDouble(ls As IEnumerable(Of String)) As IEnumerable(Of Double)
         For Each s In ls
-            Try
-                Dim i = CDbl(s)
-                Yield i
-            Catch ex As Exception
-
-            End Try
+            Yield s.ToDouble
         Next
 
     End Function
+    ''' <summary>
+    ''' Convert Enumerable of Strings into Enumerable Of Int16
+    ''' </summary>
+    ''' <param name="ls"></param>
+    ''' <returns></returns>
     <Extension()>
     Public Iterator Function ToInt16(ls As IEnumerable(Of String)) As IEnumerable(Of Int16)
         For Each s In ls
@@ -195,6 +315,11 @@ Public Module Extensions
         Next
 
     End Function
+    ''' <summary>
+    ''' Convert Enumerable of Strings into Enumerable Of Single
+    ''' </summary>
+    ''' <param name="ls"></param>
+    ''' <returns></returns>
     <Extension()>
     Public Iterator Function ToSingle(ls As IEnumerable(Of String)) As IEnumerable(Of Single)
         For Each s In ls
@@ -207,6 +332,11 @@ Public Module Extensions
         Next
 
     End Function
+    ''' <summary>
+    ''' Convert Enumerable of Strings into Enumerable Of Long (Int64)
+    ''' </summary>
+    ''' <param name="ls"></param>
+    ''' <returns></returns>
     <Extension()>
     Public Iterator Function ToInt64(ls As IEnumerable(Of String)) As IEnumerable(Of Int64)
         For Each s In ls
@@ -222,6 +352,12 @@ Public Module Extensions
 #End Region
 
 #Region "Split"
+    ''' <summary>
+    ''' Split a String by User Selected Separator Into Enumerable of Integer
+    ''' </summary>
+    ''' <param name="s1"></param>
+    ''' <param name="Separator"></param>
+    ''' <returns></returns>
     <Extension()>
     Public Iterator Function SplitToInteger(s1 As String, Optional Separator As String = vbTab) As IEnumerable(Of Integer)
 
@@ -235,6 +371,12 @@ Public Module Extensions
         Next
 
     End Function
+    ''' <summary>
+    ''' Split a String by User Selected Separator Into Enumerable of Double
+    ''' </summary>
+    ''' <param name="s1"></param>
+    ''' <param name="Separator"></param>
+    ''' <returns></returns>
     <Extension()>
     Public Iterator Function SplitToDouble(s1 As String, Optional Separator As String = vbTab) As IEnumerable(Of Double)
         For Each s In Split(s1, Separator)
@@ -247,6 +389,12 @@ Public Module Extensions
         Next
 
     End Function
+    ''' <summary>
+    ''' Split a String by User Selected Separator Into Enumerable of Int16
+    ''' </summary>
+    ''' <param name="s1"></param>
+    ''' <param name="Separator"></param>
+    ''' <returns></returns>
     <Extension()>
     Public Iterator Function SplitToInt16(s1 As String, Optional Separator As String = vbTab) As IEnumerable(Of Int16)
         For Each s In Split(s1, Separator)
@@ -259,6 +407,12 @@ Public Module Extensions
         Next
 
     End Function
+    ''' <summary>
+    ''' Split a String by User Selected Separator Into Enumerable of Single
+    ''' </summary>
+    ''' <param name="s1"></param>
+    ''' <param name="Separator"></param>
+    ''' <returns></returns>
     <Extension()>
     Public Iterator Function SplitToSingle(s1 As String, Optional Separator As String = vbTab) As IEnumerable(Of Single)
         For Each s In Split(s1, Separator)
@@ -271,6 +425,12 @@ Public Module Extensions
         Next
 
     End Function
+    ''' <summary>
+    ''' Split a String by User Selected Separator Into Enumerable of Long (Int64)
+    ''' </summary>
+    ''' <param name="s1"></param>
+    ''' <param name="Separator"></param>
+    ''' <returns></returns>
     <Extension()>
     Public Iterator Function SplitToInt64(s1 As String, Optional Separator As String = vbTab) As IEnumerable(Of Int64)
         For Each s In Split(s1, Separator)
@@ -286,12 +446,38 @@ Public Module Extensions
 #End Region
 
 #Region "Remove"
+    ''' <summary>
+    ''' Yield all where there is no e,mpty string
+    ''' </summary>
+    ''' <param name="Strings"></param>
+    ''' <returns></returns>
+    <Extension()>
+    Public Iterator Function RemoveEmpty(Strings As IEnumerable(Of String)) As IEnumerable(Of String)
+        For Each s In Strings
+            If s <> String.Empty Then Yield s
+        Next
+    End Function
+
+
+
+    ''' <summary>
+    ''' Replace a SubStrings Into Empty Strings In StringS
+    ''' </summary>
+    ''' <param name="OriginalStringS"></param>
+    ''' <param name="StringsToRemove"></param>
+    ''' <returns></returns>
     <Extension()>
     Public Iterator Function Remove(OriginalStrings As IEnumerable(Of String), StringsToRemove As IEnumerable(Of String)) As IEnumerable(Of String)
         For Each OriginalString In OriginalStrings
             Yield Remove(OriginalString, StringsToRemove)
         Next
     End Function
+    ''' <summary>
+    ''' Replace a SubStrings Into Empty Strings In String
+    ''' </summary>
+    ''' <param name="OriginalString"></param>
+    ''' <param name="StringsToRemove"></param>
+    ''' <returns></returns>
     <Extension()>
     Public Function Remove(OriginalString As String, StringsToRemove As IEnumerable(Of String)) As String
         If IsNothing(StringsToRemove) = True Then Return OriginalString
@@ -300,10 +486,22 @@ Public Module Extensions
         Next
         Return OriginalString
     End Function
+    ''' <summary>
+    ''' Replace a SubString Into Empty String In String
+    ''' </summary>
+    ''' <param name="OriginalString"></param>
+    ''' <param name="StringToRemove"></param>
+    ''' <returns></returns>
     <Extension()>
     Public Function Remove(OriginalString As String, StringToRemove As String) As String
         Return OriginalString.Replace(StringToRemove, "")
     End Function
+    ''' <summary>
+    ''' Replace a SubString Into Empty Strings In StringS
+    ''' </summary>
+    ''' <param name="OriginalStrings"></param>
+    ''' <param name="StringToRemove"></param>
+    ''' <returns></returns>
     <Extension()>
     Public Iterator Function Remove(OriginalStrings As IEnumerable(Of String), StringToRemove As String) As IEnumerable(Of String)
 
@@ -473,24 +671,49 @@ Public Module Extensions
 #End Region
 
 #Region "Insert"
+    ''' <summary>
+    ''' Insert a SubString Before Every Enumerable of Strings
+    ''' </summary>
+    ''' <param name="ls"></param>
+    ''' <param name="Before"></param>
+    ''' <returns></returns>
     <Extension()>
     Public Iterator Function InsertBefore(ls As IEnumerable(Of String), Before As String) As IEnumerable(Of String)
         For Each s In ls
             Yield Before & s
         Next
     End Function
+    ''' <summary>
+    ''' Insert a SubString After Every Enumerable of Strings
+    ''' </summary>
+    ''' <param name="ls"></param>
+    ''' <param name="After"></param>
+    ''' <returns></returns>
     <Extension()>
     Public Iterator Function InsertAfter(ls As IEnumerable(Of String), After As String) As IEnumerable(Of String)
         For Each s In ls
             Yield s & After
         Next
     End Function
+    ''' <summary>
+    ''' Insert a SubString Before And After Every Enumerable of Strings
+    ''' </summary>
+    ''' <param name="ls"></param>
+    ''' <param name="BeforeAfter"></param>
+    ''' <returns></returns>
     <Extension()>
     Public Iterator Function InsertBeforeAfter(ls As IEnumerable(Of String), BeforeAfter As String) As IEnumerable(Of String)
         For Each s In ls
             Yield BeforeAfter & s & BeforeAfter
         Next
     End Function
+    ''' <summary>
+    ''' Insert a SubString before and Insert a SubString After Every Enumerable of Strings
+    ''' </summary>
+    ''' <param name="ls"></param>
+    ''' <param name="Before"></param>
+    ''' <param name="After"></param>
+    ''' <returns></returns>
     <Extension()>
     Public Iterator Function InsertBeforeAfter(ls As IEnumerable(Of String), Before As String, After As String) As IEnumerable(Of String)
         For Each s In ls
@@ -499,10 +722,101 @@ Public Module Extensions
     End Function
 #End Region
 
+#Region "Trim"
+    ''' <summary>
+    ''' Trim IEnumarable of String with Pattern from Both End of strings
+    ''' </summary>
+    ''' <param name="ls"></param>
+    ''' <param name="ToTrim"></param>
+    ''' <returns></returns>
+    <Extension()>
+    Public Iterator Function Trim(ByVal ls As IEnumerable(Of String), ToTrim As String) As IEnumerable(Of String)
+        For Each s In ls
+            Yield s.Trim(ToTrim)
+        Next
+    End Function
+    ''' <summary>
+    ''' Trim IEnumarable of String with Patterns from Both End of strings
+    ''' </summary>
+    ''' <param name="ls"></param>
+    ''' <param name="ToTrims"></param>
+    ''' <returns></returns>
+    <Extension()>
+    Public Iterator Function Trim(ByVal ls As IEnumerable(Of String), ToTrims As IEnumerable(Of String)) As IEnumerable(Of String)
+        For Each s In ls
+            For Each ToTrim In ToTrims
+                s = s.Trim(ToTrim)
+            Next
+            Yield s
+        Next
+    End Function
+    ''' <summary>
+    ''' Trim IEnumarable of String with Pattern from Start of strings
+    ''' </summary>
+    ''' <param name="ls"></param>
+    ''' <param name="ToTrim"></param>
+    ''' <returns></returns>
+    <Extension()>
+    Public Iterator Function TrimStart(ByVal ls As IEnumerable(Of String), ToTrim As String) As IEnumerable(Of String)
+        For Each s In ls
+            Yield s.TrimStart(ToTrim)
+        Next
+    End Function
+    ''' <summary>
+    ''' Trim IEnumarable of String with Patterns from Start of strings
+    ''' </summary>
+    ''' <param name="ls"></param>
+    ''' <param name="ToTrims"></param>
+    ''' <returns></returns>
+    <Extension()>
+    Public Iterator Function TrimStart(ByVal ls As IEnumerable(Of String), ToTrims As IEnumerable(Of String)) As IEnumerable(Of String)
+        For Each s In ls
+            For Each ToTrim In ToTrims
+                s = s.TrimStart(ToTrim)
+            Next
+            Yield s
+        Next
+    End Function
+
+    ''' <summary>
+    ''' Trim IEnumarable of String with Pattern from End of strings
+    ''' </summary>
+    ''' <param name="ls"></param>
+    ''' <param name="ToTrim"></param>
+    ''' <returns></returns>
+    <Extension()>
+    Public Iterator Function TrimEnd(ByVal ls As IEnumerable(Of String), ToTrim As String) As IEnumerable(Of String)
+        For Each s In ls
+            Yield s.TrimEnd(ToTrim)
+        Next
+    End Function
+    ''' <summary>
+    ''' Trim IEnumarable of String with Patterns from End of strings
+    ''' </summary>
+    ''' <param name="ls"></param>
+    ''' <param name="ToTrims"></param>
+    ''' <returns></returns>
+    <Extension()>
+    Public Iterator Function TrimEnd(ByVal ls As IEnumerable(Of String), ToTrims As IEnumerable(Of String)) As IEnumerable(Of String)
+        For Each s In ls
+            For Each ToTrim In ToTrims
+                s = s.TrimEnd(ToTrim)
+            Next
+            Yield s
+        Next
+    End Function
+#End Region
+
     <Extension()>
     Public Function aZ09_(ByVal str As String) As String
         Return Regex.Replace(str, "[^a-zA-Z0-9_.]+", "", RegexOptions.Compiled)
     End Function
+    ''' <summary>
+    ''' Multiply a String
+    ''' </summary>
+    ''' <param name="s"></param>
+    ''' <param name="Nof"></param>
+    ''' <returns></returns>
     <Extension()>
     Public Function Multiply(s As String, Nof As Integer) As String
         Dim str As New System.Text.StringBuilder
@@ -512,19 +826,61 @@ Public Module Extensions
         Return str.ToString
     End Function
 
+    ''' <summary>
+    ''' Using RegExp It Iterate every Match
+    ''' </summary>
+    ''' <param name="ToSearch"></param>
+    ''' <param name="Pattern"></param>
+    ''' <returns></returns>
     <Extension()>
-    Public Iterator Function Trim(ByVal ls As IEnumerable(Of String), ToTrim As String) As IEnumerable(Of String)
-        For Each s In ls
-            Yield s.Trim(ToTrim)
+    Public Iterator Function Matches(ToSearch As String, Pattern As String) As IEnumerable(Of Match)
+        Dim TheMatches = Regex.Matches(ToSearch, Pattern, RegexOptions.IgnoreCase)
+        Dim TheMatch = Regex.Match(ToSearch, Pattern, RegexOptions.IgnoreCase)
+
+        For Each match As Match In TheMatches
+            Yield match
         Next
     End Function
+    ''' <summary>
+    ''' Return a New,Cloned Enumerable of String
+    ''' </summary>
+    ''' <param name="ls"></param>
+    ''' <returns></returns>
     <Extension()>
-    Public Iterator Function Trim(ByVal ls As IEnumerable(Of String), ToTrims As IEnumerable(Of String)) As IEnumerable(Of String)
-        For Each s In ls
-            For Each ToTrim In ToTrims
-                s = s.Trim(ToTrim)
-            Next
+    Public Iterator Function CloneStrings(ls As IEnumerable(Of String)) As IEnumerable(Of String)
+        Dim out As New List(Of String)
+        For Each Item In ls
+            Dim s As String = Item
             Yield s
         Next
+
+    End Function
+
+    ''' <summary>
+    ''' Invariant Culture, Ignore Case
+    ''' </summary>
+    ''' <param name="ls"></param>
+    ''' <param name="Item"></param>
+    ''' <returns></returns>
+    <Extension>
+    Public Function HasContain(ls As IEnumerable(Of String), Item As String) As Boolean
+        Dim res = From x In ls Where x.IndexOf(Item, comparisonType:=StringComparison.InvariantCultureIgnoreCase) > -1
+        If res.Count > 0 Then
+            Return True
+        Else
+            Return False
+        End If
+    End Function
+
+    <Extension()>
+    Public Function GetConstants(ByVal type As Type) As IEnumerable(Of FieldInfo)
+        Dim fieldInfos = type.GetFields(BindingFlags.[Public] Or BindingFlags.[Static] Or BindingFlags.FlattenHierarchy)
+        Return fieldInfos.Where(Function(fi) fi.IsLiteral AndAlso Not fi.IsInitOnly)
+    End Function
+
+    <Extension()>
+    Public Function GetConstantsValues(Of T As Class)(ByVal type As Type) As IEnumerable(Of T)
+        Dim fieldInfos = GetConstants(type)
+        Return fieldInfos.[Select](Function(fi) TryCast(fi.GetRawConstantValue(), T))
     End Function
 End Module
